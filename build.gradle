@@ -1,0 +1,60 @@
+plugins {
+    id 'java'
+    id 'application'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
+}
+
+group = 'kmql'
+version = '0.1.0'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+    compileOnly 'org.projectlombok:lombok:1.18.16'
+    annotationProcessor 'org.projectlombok:lombok:1.18.16'
+
+    implementation 'info.picocli:picocli:4.5.1'
+    annotationProcessor 'info.picocli:picocli-codegen:4.5.1'
+    implementation 'org.jline:jline:3.16.0'
+
+    implementation 'org.apache.kafka:kafka-clients:2.4.1'
+    implementation 'com.h2database:h2:1.4.200'
+    implementation 'com.jakewharton.fliptables:fliptables:1.1.0'
+
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.11.3'
+
+    testImplementation 'junit:junit:4.13'
+}
+
+task executable {
+    dependsOn 'shadowJar'
+    doLast {
+        File scriptFile = new File(project.rootDir, "${project.name}.sh")
+        File jarFile = new File(project.buildDir, "libs/${project.name}-${project.version}-all.jar")
+        File outDir = new File(project.buildDir, "distributions")
+        outDir.mkdirs()
+        File outFile = new File(outDir, "${project.name}-${project.version}")
+        outFile.setBytes(new byte[0])
+        outFile.append(scriptFile.newInputStream())
+        outFile.append(jarFile.newInputStream())
+        outFile.setExecutable(true)
+    }
+}
+assemble.dependsOn('executable')
+
+task executableZip(type: Zip) {
+    dependsOn 'executable'
+    from "${project.buildDir}/distributions/${project.name}-${project.version}"
+    destinationDirectory = new File(project.buildDir, "distributions")
+    archiveFileName = "${project.name}-bin-${project.version}.zip"
+}
+
+application {
+    mainClassName = 'kmql.Kmql'
+}
+
+run {
+    standardInput System.in
+}
