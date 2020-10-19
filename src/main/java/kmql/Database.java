@@ -5,6 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -50,6 +51,10 @@ public class Database implements AutoCloseable {
         TableMetadata meta = getTable(name);
         if (meta.initialized) {
             return;
+        }
+        Collection<String> dependencyTables = meta.table.dependencyTables();
+        for (String dependencyTable : dependencyTables) {
+            prepareTable(dependencyTable, adminClient);
         }
         meta.table.prepare(connection, adminClient);
         meta.initialized = true;
