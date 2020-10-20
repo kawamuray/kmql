@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import kmql.format.JsonFormat;
+import kmql.format.SsvFormat;
 import kmql.format.TableFormat;
 
 public class OutputFormatRegistry {
@@ -13,6 +14,7 @@ public class OutputFormatRegistry {
     static {
         registerDefault("table", new TableFormat());
         registerDefault("json", new JsonFormat());
+        registerDefault("ssv", new SsvFormat());
     }
 
     private final ConcurrentMap<String, OutputFormat> formats;
