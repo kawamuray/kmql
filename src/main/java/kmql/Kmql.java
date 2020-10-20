@@ -79,11 +79,18 @@ public class Kmql implements Callable<Integer> {
 
     private Properties adminClientConfig() throws IOException {
         Properties props = new Properties();
-        try (FileInputStream in = new FileInputStream(clientProperties.toFile())) {
-            props.load(in);
+        if (clientProperties != null) {
+            try (FileInputStream in = new FileInputStream(clientProperties.toFile())) {
+                props.load(in);
+            }
         }
         if (bootstrapServers != null) {
             props.setProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
+        }
+        if (props.getProperty(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG) == null) {
+            System.err.println("Missing " + AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG);
+            CommandLine.usage(this, System.err);
+            System.exit(1);
         }
         return props;
     }
