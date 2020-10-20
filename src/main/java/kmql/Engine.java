@@ -42,8 +42,10 @@ public class Engine implements AutoCloseable {
         for (String table : requiredTables) {
             try {
                 db.prepareTable(table, adminClient);
-            } catch (Exception ignored) {
+            } catch (IllegalArgumentException ignored) {
                 // skip failed tables for now...
+            } catch (Exception e) {
+                throw new RuntimeException("Error initializing table: " + table, e);
             }
         }
     }

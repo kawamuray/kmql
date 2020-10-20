@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import kmql.table.BrokersTable;
+import kmql.table.ConfigsTable;
 import kmql.table.LogdirsTable;
 import kmql.table.ReplicasTable;
 
@@ -18,6 +19,7 @@ public class TableRegistry implements Iterable<Map.Entry<String, Table>> {
         registerDefault(new ReplicasTable());
         registerDefault(new BrokersTable());
         registerDefault(new LogdirsTable());
+        registerDefault(new ConfigsTable());
     }
 
     private final ConcurrentMap<String, Table> tables;
