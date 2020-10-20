@@ -3,7 +3,7 @@ kmql
 
 Kafka Management with sQL
 
-`kmql` is a command that allows you to query [Apache Kafka](https://kafka.apache.org/) cluster's metadata.
+`kmql` is a command that allows you to query [Apache Kafka](https://kafka.apache.org/) cluster's metadata using SQL.
 
 ## The problem
 
@@ -81,7 +81,7 @@ SELECT * FROM replicas WHERE topic = 'topic-name'
 SELECT topic, COUNT(DISTINCT partition) AS partitions FROM replicas GROUP BY topic HAVING partitions > 100 ORDER BY partitions DESC
 
 # Topic/partitions which its leader is assigned to broker 1
-SELECT topic, partition FROM replicas WHERE broker_id=1 AND is_leader
+SELECT topic, partition FROM replicas WHERE broker_id = 1 AND is_leader
 
 # Topic partitions that has an out-of-sync replica
 SELECT DISTINCT topic, partition FROM replicas WHERE NOT is_in_sync
@@ -114,8 +114,6 @@ This stupid approach works very well for:
 
 * providing fully SQL compliant query support
 * caching obtained metadata for arbitrary duration
-
-The load time to initialize database is XX seconds even for large cluster that hosts over x partitions.
 
 # License
 
