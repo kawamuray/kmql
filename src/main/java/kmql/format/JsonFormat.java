@@ -14,6 +14,9 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import kmql.OutputFormat;
 
+/**
+ * JSON format.
+ */
 public class JsonFormat implements OutputFormat {
     private final ObjectMapper mapper = new ObjectMapper()
             .disable(Feature.AUTO_CLOSE_TARGET);

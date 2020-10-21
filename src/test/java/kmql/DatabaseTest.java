@@ -10,7 +10,6 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.atomic.AtomicReference;
@@ -60,24 +59,11 @@ public class DatabaseTest {
         db.close();
     }
 
-    private boolean tableExists(String name) throws SQLException {
-        try (Statement stmt = connection.createStatement();
-             ResultSet results = stmt.executeQuery("SHOW TABLES")) {
-            while (results.next()) {
-                String table = results.getString(1);
-                if (table.toLowerCase().equals(name.toLowerCase())) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-
     @Test
     public void prepareTable() throws Exception {
         db.prepareTable("xyz", adminClient);
         verify(xyzTable, times(1)).prepare(connection, adminClient);
-        assertTrue(tableExists("xyz"));
+        assertTrue(SqlUtils.tableExists(connection, "xyz"));
         // This should be no-op because it's already initialized
         db.prepareTable("xyz", adminClient);
         verify(xyzTable, times(1)).prepare(connection, adminClient);
@@ -99,7 +85,7 @@ public class DatabaseTest {
     public void dropTable() throws Exception {
         db.prepareTable("xyz", adminClient);
         db.dropTable("xyz");
-        assertFalse(tableExists("xyz"));
+        assertFalse(SqlUtils.tableExists(connection, "xyz"));
     }
 
     @Test(expected = IllegalStateException.class)

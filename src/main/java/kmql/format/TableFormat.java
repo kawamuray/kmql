@@ -12,6 +12,9 @@ import com.jakewharton.fliptables.FlipTable;
 
 import kmql.OutputFormat;
 
+/**
+ * Pretty-printed table format.
+ */
 public class TableFormat implements OutputFormat {
     public static final String[][] ARRAY_PROTO = new String[0][];
 
@@ -36,7 +39,6 @@ public class TableFormat implements OutputFormat {
 
         PrintWriter pw = new PrintWriter(out);
         pw.write(FlipTable.of(headers, rows.toArray(ARRAY_PROTO)));
-        pw.println();
         pw.flush();
     }
 }

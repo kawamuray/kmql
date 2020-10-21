@@ -10,6 +10,9 @@ import org.apache.kafka.clients.admin.AdminClient;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 
+/**
+ * A core runtime of kmql.
+ */
 @AllArgsConstructor
 public class Engine implements AutoCloseable {
     private final AdminClient adminClient;
@@ -18,6 +21,13 @@ public class Engine implements AutoCloseable {
     @NonNull
     private OutputFormat outputFormat;
 
+    /**
+     * Creates a new {@link Engine} from the given {@link AdminClient} and the name of the output format.
+     * Default instances are used for both of {@link OutputFormatRegistry} and {@link TableRegistry}.
+     * @param adminClient an {@link AdminClient} to access Kafka cluster's metadata.
+     * @param outputFormatName the name of output format to use.
+     * @return an {@link Engine}.
+     */
     public static Engine from(AdminClient adminClient, String outputFormatName) {
         OutputFormatRegistry outputFormatRegistry = OutputFormatRegistry.DEFAULT;
         OutputFormat outputFormat = lookupOutputFormat(outputFormatRegistry, outputFormatName);
@@ -25,6 +35,13 @@ public class Engine implements AutoCloseable {
         return new Engine(adminClient, db, outputFormatRegistry, outputFormat);
     }
 
+    /**
+     * Execute the given command.
+     * Command should be a valid SQL for now.
+     * @param command command to execute.
+     * @param output the output stream to write the formatted query result.
+     * @throws SQLException when SQL fails.
+     */
     public void execute(String command, BufferedOutputStream output) throws SQLException {
         prepareRequiredTables(command);
         db.executeQuery(command, results -> {
@@ -50,6 +67,9 @@ public class Engine implements AutoCloseable {
         }
     }
 
+    /**
+     * Initialize all tables that this engine supports.
+     */
     public void initAllTables() {
         try {
             db.prepareAllTables(adminClient);
@@ -58,10 +78,18 @@ public class Engine implements AutoCloseable {
         }
     }
 
+    /**
+     * Set the output format to the given instance of {@link OutputFormat}.
+     * @param outputFormat a new output format to use.
+     */
     public void setOutputFormat(@NonNull OutputFormat outputFormat) {
         this.outputFormat = outputFormat;
     }
 
+    /**
+     * Set the output format to the specified instance by the given name.
+     * @param name name of the output format.
+     */
     public void setOutputFormat(String name) {
         OutputFormat newFormat = lookupOutputFormat(outputFormatRegistry, name);
         setOutputFormat(newFormat);

@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 import org.h2.tools.SimpleResultSet;
 
@@ -25,6 +26,19 @@ public class SqlUtils {
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static boolean tableExists(Connection connection, String name) throws SQLException {
+        try (Statement stmt = connection.createStatement();
+             ResultSet results = stmt.executeQuery("SHOW TABLES")) {
+            while (results.next()) {
+                String table = results.getString(1);
+                if (table.toLowerCase().equals(name.toLowerCase())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static ResultSet resultSet(ColumnInfo[] columns, Object[]... rows) {
