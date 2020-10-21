@@ -1,6 +1,9 @@
 package kmql;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 import org.h2.tools.SimpleResultSet;
 
@@ -13,6 +16,15 @@ public class SqlUtils {
     public static class ColumnInfo {
         String name;
         int sqlType;
+    }
+
+    public static Connection connection() {
+        try {
+            Class.forName("org.h2.Driver");
+            return DriverManager.getConnection("jdbc:h2:mem:");
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static ResultSet resultSet(ColumnInfo[] columns, Object[]... rows) {
