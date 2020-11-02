@@ -94,6 +94,14 @@ public class DatabaseTest {
     }
 
     @Test
+    public void dropAllTables() throws Exception {
+        db.prepareTable("xyz", adminClient);
+        db.dropAllTables();
+        assertFalse(SqlUtils.tableExists(connection, "xyz"));
+        assertFalse(SqlUtils.tableExists(connection, "foo"));
+    }
+
+    @Test
     public void executeQuery() throws Exception {
         db.prepareTable("xyz", adminClient);
         AtomicReference<String> tableName = new AtomicReference<>();

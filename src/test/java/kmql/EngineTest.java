@@ -4,6 +4,8 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
 
 import java.io.BufferedOutputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -52,7 +54,22 @@ public class EngineTest {
             }
         };
         outputFormatRegistry.register("raw", rawFormat);
-        engine = new Engine(adminClient, db, outputFormatRegistry, rawFormat);
+
+        CommandRegistry commandRegistry = new CommandRegistry();
+        commandRegistry.register("xyz", new Command() {
+            @Override
+            public String help() {
+                return "";
+            }
+
+            @Override
+            public void execute(List<String> args, Engine engine, BufferedOutputStream output) {
+                try {
+                    output.write("xyz".getBytes());
+                } catch (IOException ignored) {}
+            }
+        });
+        engine = new Engine(adminClient, db, outputFormatRegistry, commandRegistry, rawFormat);
     }
 
     @After
@@ -61,7 +78,7 @@ public class EngineTest {
     }
 
     @Test
-    public void execute() throws SQLException {
+    public void executeSql() throws SQLException {
         // This call should initialize the table internally
         engine.execute("SELECT id FROM xyz", mock(BufferedOutputStream.class));
         assertEquals(Arrays.asList("foo", "bar", "baz"), outputs);
@@ -69,6 +86,15 @@ public class EngineTest {
         // This call should use existing table
         engine.execute("SELECT id FROM xyz", mock(BufferedOutputStream.class));
         assertEquals(Arrays.asList("foo", "bar", "baz"), outputs);
+    }
+
+    @Test
+    public void executeCommand() throws Exception {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try (BufferedOutputStream bout = new BufferedOutputStream(output)) {
+            engine.execute(":xyz", bout);
+        }
+        assertEquals("xyz", new String(output.toByteArray()));
     }
 
     @Test

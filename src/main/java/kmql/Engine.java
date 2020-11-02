@@ -8,16 +8,21 @@ import java.util.List;
 import org.apache.kafka.clients.admin.AdminClient;
 
 import lombok.AllArgsConstructor;
+import lombok.Getter;
 import lombok.NonNull;
+import lombok.experimental.Accessors;
 
 /**
  * A core runtime of kmql.
  */
 @AllArgsConstructor
+@Accessors(fluent = true)
+@Getter
 public class Engine implements AutoCloseable {
     private final AdminClient adminClient;
     private final Database db;
     private final OutputFormatRegistry outputFormatRegistry;
+    private final CommandRegistry commandRegistry;
     @NonNull
     private OutputFormat outputFormat;
 
@@ -29,10 +34,9 @@ public class Engine implements AutoCloseable {
      * @return an {@link Engine}.
      */
     public static Engine from(AdminClient adminClient, String outputFormatName) {
-        OutputFormatRegistry outputFormatRegistry = OutputFormatRegistry.DEFAULT;
-        OutputFormat outputFormat = lookupOutputFormat(outputFormatRegistry, outputFormatName);
+        OutputFormat outputFormat = lookupOutputFormat(OutputFormatRegistry.DEFAULT, outputFormatName);
         Database db = Database.from(TableRegistry.DEFAULT);
-        return new Engine(adminClient, db, outputFormatRegistry, outputFormat);
+        return new Engine(adminClient, db, OutputFormatRegistry.DEFAULT, CommandRegistry.DEFAULT, outputFormat);
     }
 
     /**
@@ -43,6 +47,11 @@ public class Engine implements AutoCloseable {
      * @throws SQLException when SQL fails.
      */
     public void execute(String command, BufferedOutputStream output) throws SQLException {
+        if (Commands.isCommand(command)) {
+            Commands.executeLine(this, output, command);
+            return;
+        }
+
         prepareRequiredTables(command);
         db.executeQuery(command, results -> {
             try {

@@ -102,6 +102,20 @@ public class Database implements AutoCloseable {
     }
 
     /**
+     * Drop all tables.
+     * @throws SQLException when SQL failed.
+     */
+    public void dropAllTables() throws SQLException {
+        for (Entry<String, TableMetadata> entry : tables.entrySet()) {
+            String name = entry.getKey();
+            TableMetadata meta = entry.getValue();
+            if (meta.initialized) {
+                dropTable(name);
+            }
+        }
+    }
+
+    /**
      * Execute the given query and call the given handler with the {@link ResultSet}.
      * @param sql an SQL query.
      * @param resultHandler callback handler that processes the the result.
