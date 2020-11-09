@@ -47,11 +47,20 @@ public class Database implements AutoCloseable {
         }
     }
 
+    private static void createTable(Connection connection, Table table) {
+        try {
+            table.create(connection);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     Database(Connection connection, TableRegistry registry) {
         this.connection = connection;
         tables = new HashMap<>();
         for (Entry<String, Table> entry : registry) {
             tables.put(entry.getKey(), new TableMetadata(entry.getValue()));
+            createTable(connection, entry.getValue());
         }
     }
 
@@ -86,31 +95,31 @@ public class Database implements AutoCloseable {
     }
 
     /**
-     * Drop the table of the given name.
+     * Truncate the table of the given name.
      * @param name the name of the table.
      * @throws SQLException when SQL failed.
      */
-    public void dropTable(String name) throws SQLException {
+    public void truncateTable(String name) throws SQLException {
         TableMetadata meta = getTable(name);
         if (!meta.initialized) {
             throw new IllegalStateException("table not initialized: " + name);
         }
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(String.format("DROP TABLE %s", meta.table.name()));
+            stmt.execute(String.format("TRUNCATE TABLE %s", meta.table.name()));
         }
         meta.initialized = false;
     }
 
     /**
-     * Drop all tables.
+     * Truncate all tables.
      * @throws SQLException when SQL failed.
      */
-    public void dropAllTables() throws SQLException {
+    public void truncateAllTables() throws SQLException {
         for (Entry<String, TableMetadata> entry : tables.entrySet()) {
             String name = entry.getKey();
             TableMetadata meta = entry.getValue();
             if (meta.initialized) {
-                dropTable(name);
+                truncateTable(name);
             }
         }
     }

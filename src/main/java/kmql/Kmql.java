@@ -55,7 +55,10 @@ public class Kmql implements Callable<Integer> {
             if (executeSql != null) {
                 engine.execute(executeSql, output);
             } else {
-                LineReader reader = LineReaderBuilder.builder().build();
+                LineReader reader = LineReaderBuilder.builder()
+                                                     .option(LineReader.Option.CASE_INSENSITIVE, true)
+                                                     .completer(QueryCompleter.from(engine))
+                                                     .build();
                 while (true) {
                     final String sql;
                     try {

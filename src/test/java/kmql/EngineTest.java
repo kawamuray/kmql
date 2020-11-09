@@ -37,9 +37,15 @@ public class EngineTest {
             }
 
             @Override
-            public void prepare(Connection connection, AdminClient adminClient) throws Exception {
+            public void create(Connection connection) throws Exception {
                 try (Statement stmt = connection.createStatement()) {
                     stmt.execute("CREATE TABLE xyz (id VARCHAR(255) NOT NULL)");
+                }
+            }
+
+            @Override
+            public void prepare(Connection connection, AdminClient adminClient) throws Exception {
+                try (Statement stmt = connection.createStatement()) {
                     stmt.executeUpdate("INSERT INTO xyz VALUES ('foo'), ('bar'), ('baz')");
                 }
             }
@@ -100,6 +106,6 @@ public class EngineTest {
     @Test
     public void initAllTables() throws SQLException {
         engine.initAllTables();
-        SqlUtils.tableExists(connection, "xyz");
+        SqlUtils.tableNonEmpty(connection, "xyz");
     }
 }

@@ -28,9 +28,17 @@ public interface Table {
     }
 
     /**
-     * Prepare this table on the given {@link Connection}. This process includes both of creating a table and
-     * feeding in its data by obtaining it from the given {@link AdminClient}.
-     * At the time of this method call, absence of the target table is guaranteed.
+     * Create this table on the given {@link Connection}.
+     * It's guaranteed that this method is called only once per kmql session.
+     * @param connection a JDBC {@link Connection}.
+     * @throws Exception at any errors.
+     */
+    void create(Connection connection) throws Exception;
+
+    /**
+     * Prepare this table on the given {@link Connection} by feeding in its data by
+     * obtaining it from the given {@link AdminClient}.
+     * At the time of this method call, it's guaranteed that the target table exists and it's' empty.
      * @param connection a JDBC {@link Connection}.
      * @param adminClient a Kafka {@link AdminClient}.
      * @throws Exception at any errors.

@@ -41,7 +41,7 @@ public class ExpireCommandTest {
     public void executeNoArgs() throws SQLException {
         cmd.execute(emptyList(), engine, mock(BufferedOutputStream.class));
 
-        verify(db, times(1)).dropAllTables();
+        verify(db, times(1)).truncateAllTables();
     }
 
     @Test
@@ -50,7 +50,7 @@ public class ExpireCommandTest {
         cmd.execute(tables, engine, mock(BufferedOutputStream.class));
 
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
-        verify(db, times(2)).dropTable(captor.capture());
+        verify(db, times(2)).truncateTable(captor.capture());
         assertEquals(tables, captor.getAllValues());
     }
 }
