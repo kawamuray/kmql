@@ -5,11 +5,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 
@@ -144,6 +148,37 @@ public class Database implements AutoCloseable {
      */
     public boolean tableInitialized(String name) {
         return getTable(name).initialized;
+    }
+
+    /**
+     * Return tables contained in this database
+     * @return the set of {@link Table}
+     */
+    public Set<Table> tables() {
+        return tables.values().stream().map(m -> m.table).collect(Collectors.toSet());
+    }
+
+    /**
+     * Return columns of the given table.
+     * @param table the target table.
+     * @return the list of column names.
+     */
+    public List<String> columns(Table table) {
+        List<String> columns = new ArrayList<>();
+        try {
+            executeQuery("SHOW COLUMNS FROM " + table.name(), results -> {
+                try {
+                    while (results.next()) {
+                        columns.add(results.getString(1));
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return columns;
     }
 
     private TableMetadata getTable(String name) {

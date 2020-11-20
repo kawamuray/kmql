@@ -7,14 +7,18 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 import java.util.concurrent.Callable;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.AdminClientConfig;
+import org.jline.reader.Completer;
 import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.impl.completer.StringsCompleter;
 
 import picocli.CommandLine;
 import picocli.CommandLine.Command;
@@ -57,7 +61,7 @@ public class Kmql implements Callable<Integer> {
             } else {
                 LineReader reader = LineReaderBuilder.builder()
                                                      .option(LineReader.Option.CASE_INSENSITIVE, true)
-                                                     .completer(QueryCompleter.from(engine))
+                                                     .completer(queryCompleter(engine.db()))
                                                      .build();
                 while (true) {
                     final String sql;
@@ -96,6 +100,20 @@ public class Kmql implements Callable<Integer> {
             System.exit(1);
         }
         return props;
+    }
+
+    private static Completer queryCompleter(Database db) {
+        Set<String> candidates = new HashSet<>();
+        db.tables().forEach(table -> {
+            candidates.add(table.name().toLowerCase());
+
+            db.columns(table)
+              .stream()
+              .map(String::toLowerCase)
+              .forEach(candidates::add);
+        });
+
+        return new StringsCompleter(candidates);
     }
 
     public static void main(String[] args) {

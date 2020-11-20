@@ -3,7 +3,6 @@ package kmql;
 import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.kafka.clients.admin.AdminClient;
@@ -75,29 +74,6 @@ public class Engine implements AutoCloseable {
                 throw new RuntimeException("Error initializing table: " + table, e);
             }
         }
-    }
-
-    /**
-     * Show columns of the given table
-     * @param table the target table
-     * @return the list of column names
-     */
-    public List<String> showColumns(Table table) {
-        List<String> columns = new ArrayList<>();
-        try {
-            db.executeQuery("SHOW COLUMNS FROM " + table.name(), results -> {
-                try {
-                    while (results.next()) {
-                        columns.add(results.getString(1));
-                    }
-                } catch (SQLException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return columns;
     }
 
     /**

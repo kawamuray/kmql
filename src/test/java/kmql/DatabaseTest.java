@@ -11,6 +11,8 @@ import static org.mockito.Mockito.verify;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.kafka.clients.admin.AdminClient;
@@ -126,5 +128,15 @@ public class DatabaseTest {
         assertFalse(db.tableInitialized("xyz"));
         db.prepareTable("xyz", adminClient);
         assertTrue(db.tableInitialized("xyz"));
+    }
+
+    @Test
+    public void tables() throws Exception {
+        assertEquals(new HashSet<>(Arrays.asList(xyzTable, fooTable)), db.tables());
+    }
+
+    @Test
+    public void columns() throws Exception {
+        assertEquals(Arrays.asList("ID"), db.columns(xyzTable));
     }
 }
