@@ -34,11 +34,11 @@ public class ConfigsTable implements Table {
     public void prepare(Connection connection, AdminClient adminClient) throws Exception {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE configs ("
-                         + "resource_type ENUM('broker', 'topic') NOT NULL,"
+                         + "resource_type ENUM('broker_logger', 'broker', 'topic', 'unknown') NOT NULL,"
                          + "name VARCHAR(255) NOT NULL,"
                          + "key VARCHAR(255) NOT NULL,"
                          + "value VARCHAR(255),"
-                         + "source ENUM('dynamic_topic_config', 'dynamic_broker_logger_config', 'dynamic_broker_config_config',"
+                         + "source ENUM('dynamic_topic_config', 'dynamic_broker_logger_config', 'dynamic_broker_config',"
                          + "            'dynamic_default_broker_config', 'static_broker_config', 'default_config', 'unknown'),"
                          + "is_default BOOLEAN NOT NULL,"
                          + "is_sensitive BOOLEAN NOT NULL,"
