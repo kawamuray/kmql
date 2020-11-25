@@ -58,10 +58,10 @@ public class ConfigsTableTest {
         doReturn(result).when(adminClient).describeConfigs(any());
 
         try (Connection connection = SqlUtils.connection()) {
-            try (Statement stmt = connection.createStatement()) {
-                stmt.execute("CREATE TABLE brokers (id INT)");
-                stmt.execute("CREATE TABLE replicas (topic VARCHAR(255))");
-            }
+            // Prepare empty dependency tables
+            new BrokersTable().create(connection);
+            new ReplicasTable().create(connection);
+
             table.create(connection);
             table.prepare(connection, adminClient);
 
