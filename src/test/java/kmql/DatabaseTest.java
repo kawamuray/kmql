@@ -3,7 +3,6 @@ package kmql;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.times;
@@ -12,6 +11,8 @@ import static org.mockito.Mockito.verify;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.kafka.clients.admin.AdminClient;
@@ -39,18 +40,26 @@ public class DatabaseTest {
 
     @Before
     public void setUp() throws Exception {
+        connection = SqlUtils.connection();
+
         doReturn("xyz").when(xyzTable).name();
+        doReturn("foo").when(fooTable).name();
         doAnswer(invocation -> {
-            Connection conn = invocation.getArgument(0);
-            try (Statement stmt = conn.createStatement()) {
+            try (Statement stmt = connection.createStatement()) {
                 stmt.execute("CREATE TABLE xyz (id INT NOT NULL)");
             }
             return null;
-        }).when(xyzTable).prepare(any(Connection.class), any(AdminClient.class));
-        doReturn("foo").when(fooTable).name();
+        }).when(xyzTable).create(connection);
+        doAnswer(invocation -> {
+            try (Statement stmt = connection.createStatement()) {
+                stmt.execute("CREATE TABLE foo (id INT NOT NULL)");
+            }
+            return null;
+        }).when(fooTable).create(connection);
+
         registry.register("xyz", xyzTable);
         registry.register("foo", fooTable);
-        connection = SqlUtils.connection();
+
         db = new Database(connection, registry);
     }
 
@@ -63,7 +72,6 @@ public class DatabaseTest {
     public void prepareTable() throws Exception {
         db.prepareTable("xyz", adminClient);
         verify(xyzTable, times(1)).prepare(connection, adminClient);
-        assertTrue(SqlUtils.tableExists(connection, "xyz"));
         // This should be no-op because it's already initialized
         db.prepareTable("xyz", adminClient);
         verify(xyzTable, times(1)).prepare(connection, adminClient);
@@ -82,23 +90,23 @@ public class DatabaseTest {
     }
 
     @Test
-    public void dropTable() throws Exception {
+    public void truncateTable() throws Exception {
         db.prepareTable("xyz", adminClient);
-        db.dropTable("xyz");
-        assertFalse(SqlUtils.tableExists(connection, "xyz"));
+        db.truncateTable("xyz");
+        assertFalse(db.tableInitialized("xyz"));
     }
 
     @Test(expected = IllegalStateException.class)
-    public void dropAbsentTable() throws Exception {
-        db.dropTable("xyz");
+    public void truncateUninitializedTable() throws Exception {
+        db.truncateTable("xyz");
     }
 
     @Test
-    public void dropAllTables() throws Exception {
+    public void truncateAllTables() throws Exception {
         db.prepareTable("xyz", adminClient);
-        db.dropAllTables();
-        assertFalse(SqlUtils.tableExists(connection, "xyz"));
-        assertFalse(SqlUtils.tableExists(connection, "foo"));
+        db.truncateAllTables();
+        assertFalse(db.tableInitialized("xyz"));
+        assertFalse(db.tableInitialized("foo"));
     }
 
     @Test
@@ -120,5 +128,15 @@ public class DatabaseTest {
         assertFalse(db.tableInitialized("xyz"));
         db.prepareTable("xyz", adminClient);
         assertTrue(db.tableInitialized("xyz"));
+    }
+
+    @Test
+    public void tables() throws Exception {
+        assertEquals(new HashSet<>(Arrays.asList(xyzTable.name(), fooTable.name())), db.tables());
+    }
+
+    @Test
+    public void columns() throws Exception {
+        assertEquals(Arrays.asList("ID"), db.columns(xyzTable.name()));
     }
 }

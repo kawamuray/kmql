@@ -24,15 +24,15 @@ public class ExpireCommand implements Command {
         try {
             if (args.isEmpty()) {
                 pw.println("Expiring ALL tables...");
-                engine.db().dropAllTables();
+                engine.db().truncateAllTables();
             } else {
                 for (String table : args) {
                     pw.printf("Expiring table %s...\n", table);
-                    engine.db().dropTable(table);
+                    engine.db().truncateTable(table);
                 }
             }
         } catch (Exception e) {
-            pw.println("Failed to drop table: " + e.getMessage());
+            pw.println("Failed to truncate table: " + e.getMessage());
         }
         pw.flush();
     }

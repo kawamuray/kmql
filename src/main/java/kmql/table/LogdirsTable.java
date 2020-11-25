@@ -31,7 +31,7 @@ public class LogdirsTable implements Table {
     }
 
     @Override
-    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
+    public void create(Connection connection) throws Exception {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE logdirs ("
                          + "broker_id INT NOT NULL,"
@@ -43,7 +43,10 @@ public class LogdirsTable implements Table {
                          + "is_future BOOLEAN NOT NULL,"
                          + "PRIMARY KEY (broker_id, path, topic, partition))");
         }
+    }
 
+    @Override
+    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
         List<Integer> brokerIds = new ArrayList<>();
         try (Statement stmt = connection.createStatement();
             ResultSet results = stmt.executeQuery("SELECT id FROM brokers")) {

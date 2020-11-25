@@ -5,11 +5,15 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.apache.kafka.clients.admin.AdminClient;
 
@@ -47,11 +51,20 @@ public class Database implements AutoCloseable {
         }
     }
 
+    private static void createTable(Connection connection, Table table) {
+        try {
+            table.create(connection);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     Database(Connection connection, TableRegistry registry) {
         this.connection = connection;
         tables = new HashMap<>();
         for (Entry<String, Table> entry : registry) {
             tables.put(entry.getKey(), new TableMetadata(entry.getValue()));
+            createTable(connection, entry.getValue());
         }
     }
 
@@ -86,31 +99,31 @@ public class Database implements AutoCloseable {
     }
 
     /**
-     * Drop the table of the given name.
+     * Truncate the table of the given name.
      * @param name the name of the table.
      * @throws SQLException when SQL failed.
      */
-    public void dropTable(String name) throws SQLException {
+    public void truncateTable(String name) throws SQLException {
         TableMetadata meta = getTable(name);
         if (!meta.initialized) {
             throw new IllegalStateException("table not initialized: " + name);
         }
         try (Statement stmt = connection.createStatement()) {
-            stmt.execute(String.format("DROP TABLE %s", meta.table.name()));
+            stmt.execute(String.format("TRUNCATE TABLE %s", meta.table.name()));
         }
         meta.initialized = false;
     }
 
     /**
-     * Drop all tables.
+     * Truncate all tables.
      * @throws SQLException when SQL failed.
      */
-    public void dropAllTables() throws SQLException {
+    public void truncateAllTables() throws SQLException {
         for (Entry<String, TableMetadata> entry : tables.entrySet()) {
             String name = entry.getKey();
             TableMetadata meta = entry.getValue();
             if (meta.initialized) {
-                dropTable(name);
+                truncateTable(name);
             }
         }
     }
@@ -137,12 +150,47 @@ public class Database implements AutoCloseable {
         return getTable(name).initialized;
     }
 
+    /**
+     * Return tables contained in this database.
+     * @return the set of table names.
+     */
+    public Set<String> tables() {
+        return tables.values().stream().map(m -> m.table.name()).collect(Collectors.toSet());
+    }
+
+    /**
+     * Return columns of the given table.
+     * @param name the target table name.
+     * @return the list of column names.
+     */
+    public List<String> columns(String name) {
+        ensureTablePresence(name);
+        List<String> columns = new ArrayList<>();
+        try {
+            executeQuery("SHOW COLUMNS FROM " + name, results -> {
+                try {
+                    while (results.next()) {
+                        columns.add(results.getString(1));
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return columns;
+    }
+
     private TableMetadata getTable(String name) {
-        TableMetadata meta = tables.get(name);
-        if (meta == null) {
+        ensureTablePresence(name);
+        return tables.get(name);
+    }
+
+    private void ensureTablePresence(String name) {
+        if (!tables.containsKey(name)) {
             throw new IllegalArgumentException("no such table: " + name);
         }
-        return meta;
     }
 
     @Override

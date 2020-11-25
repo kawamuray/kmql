@@ -18,7 +18,7 @@ public class BrokersTable implements Table {
     }
 
     @Override
-    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
+    public void create(Connection connection) throws Exception {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE brokers ("
                          + "id INT NOT NULL,"
@@ -28,7 +28,10 @@ public class BrokersTable implements Table {
                          + "is_controller BOOLEAN NOT NULL,"
                          + "PRIMARY KEY (id))");
         }
+    }
 
+    @Override
+    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
         DescribeClusterResult describeResult = adminClient.describeCluster();
         Collection<Node> nodes = describeResult.nodes().get();
         Node controllerNode = describeResult.controller().get();

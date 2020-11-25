@@ -28,12 +28,11 @@ public class SqlUtils {
         }
     }
 
-    public static boolean tableExists(Connection connection, String name) throws SQLException {
+    public static boolean tableNonEmpty(Connection connection, String name) throws SQLException {
         try (Statement stmt = connection.createStatement();
-             ResultSet results = stmt.executeQuery("SHOW TABLES")) {
+             ResultSet results = stmt.executeQuery("SELECT COUNT(1) FROM " + name)) {
             while (results.next()) {
-                String table = results.getString(1);
-                if (table.toLowerCase().equals(name.toLowerCase())) {
+                if (results.getInt(1) > 0) {
                     return true;
                 }
             }

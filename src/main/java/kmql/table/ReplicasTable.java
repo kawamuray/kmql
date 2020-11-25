@@ -21,7 +21,7 @@ public class ReplicasTable implements Table {
     }
 
     @Override
-    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
+    public void create(Connection connection) throws Exception {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE replicas ("
                          + "topic VARCHAR(255) NOT NULL,"
@@ -33,7 +33,10 @@ public class ReplicasTable implements Table {
                          + "replica_order INT NOT NULL,"
                          + "PRIMARY KEY (topic, partition, broker_id))");
         }
+    }
 
+    @Override
+    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
         Set<String> topics = adminClient.listTopics().names().get();
         Map<String, TopicDescription> topicInfo = adminClient.describeTopics(topics).all().get();
         try (PreparedStatement stmt = connection.prepareStatement(

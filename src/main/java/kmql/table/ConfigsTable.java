@@ -31,7 +31,7 @@ public class ConfigsTable implements Table {
     }
 
     @Override
-    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
+    public void create(Connection connection) throws Exception {
         try (Statement stmt = connection.createStatement()) {
             stmt.execute("CREATE TABLE configs ("
                          + "resource_type ENUM('broker_logger', 'broker', 'topic', 'unknown') NOT NULL,"
@@ -44,7 +44,10 @@ public class ConfigsTable implements Table {
                          + "is_sensitive BOOLEAN NOT NULL,"
                          + "PRIMARY KEY (resource_type, name, key))");
         }
+    }
 
+    @Override
+    public void prepare(Connection connection, AdminClient adminClient) throws Exception {
         List<ConfigResource> resources = new ArrayList<>();
         try (Statement stmt = connection.createStatement();
              ResultSet results = stmt.executeQuery("SELECT id FROM brokers")) {

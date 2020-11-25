@@ -62,6 +62,7 @@ public class ConfigsTableTest {
                 stmt.execute("CREATE TABLE brokers (id INT)");
                 stmt.execute("CREATE TABLE replicas (topic VARCHAR(255))");
             }
+            table.create(connection);
             table.prepare(connection, adminClient);
 
             try (Statement stmt = connection.createStatement();
