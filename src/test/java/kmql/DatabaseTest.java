@@ -132,11 +132,11 @@ public class DatabaseTest {
 
     @Test
     public void tables() throws Exception {
-        assertEquals(new HashSet<>(Arrays.asList(xyzTable, fooTable)), db.tables());
+        assertEquals(new HashSet<>(Arrays.asList(xyzTable.name(), fooTable.name())), db.tables());
     }
 
     @Test
     public void columns() throws Exception {
-        assertEquals(Arrays.asList("ID"), db.columns(xyzTable));
+        assertEquals(Arrays.asList("ID"), db.columns(xyzTable.name()));
     }
 }

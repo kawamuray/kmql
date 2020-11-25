@@ -151,22 +151,23 @@ public class Database implements AutoCloseable {
     }
 
     /**
-     * Return tables contained in this database
-     * @return the set of {@link Table}
+     * Return tables contained in this database.
+     * @return the set of table names.
      */
-    public Set<Table> tables() {
-        return tables.values().stream().map(m -> m.table).collect(Collectors.toSet());
+    public Set<String> tables() {
+        return tables.values().stream().map(m -> m.table.name()).collect(Collectors.toSet());
     }
 
     /**
      * Return columns of the given table.
-     * @param table the target table.
+     * @param name the target table name.
      * @return the list of column names.
      */
-    public List<String> columns(Table table) {
+    public List<String> columns(String name) {
+        ensureTablePresence(name);
         List<String> columns = new ArrayList<>();
         try {
-            executeQuery("SHOW COLUMNS FROM " + table.name(), results -> {
+            executeQuery("SHOW COLUMNS FROM " + name, results -> {
                 try {
                     while (results.next()) {
                         columns.add(results.getString(1));
@@ -182,11 +183,14 @@ public class Database implements AutoCloseable {
     }
 
     private TableMetadata getTable(String name) {
-        TableMetadata meta = tables.get(name);
-        if (meta == null) {
+        ensureTablePresence(name);
+        return tables.get(name);
+    }
+
+    private void ensureTablePresence(String name) {
+        if (!tables.containsKey(name)) {
             throw new IllegalArgumentException("no such table: " + name);
         }
-        return meta;
     }
 
     @Override

@@ -104,10 +104,10 @@ public class Kmql implements Callable<Integer> {
 
     private static Completer queryCompleter(Database db) {
         Set<String> candidates = new HashSet<>();
-        db.tables().forEach(table -> {
-            candidates.add(table.name().toLowerCase());
+        db.tables().forEach(name -> {
+            candidates.add(name.toLowerCase());
 
-            db.columns(table)
+            db.columns(name)
               .stream()
               .map(String::toLowerCase)
               .forEach(candidates::add);
