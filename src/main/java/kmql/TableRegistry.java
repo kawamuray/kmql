@@ -9,6 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import kmql.table.BrokersTable;
 import kmql.table.ConfigsTable;
+import kmql.table.ConsumersTable;
 import kmql.table.LogdirsTable;
 import kmql.table.ReplicasTable;
 
@@ -23,6 +24,7 @@ public class TableRegistry implements Iterable<Map.Entry<String, Table>> {
         registerDefault(new BrokersTable());
         registerDefault(new LogdirsTable());
         registerDefault(new ConfigsTable());
+        registerDefault(new ConsumersTable());
     }
 
     private final ConcurrentMap<String, Table> tables;
