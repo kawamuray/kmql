@@ -42,7 +42,7 @@ task executable {
         outFile.setBytes(new byte[0])
         outFile.append(scriptFile.newInputStream())
         outFile.append(jarFile.newInputStream())
-        outFile.setExecutable(true)
+        outFile.setExecutable(true, false)
     }
 }
 assemble.dependsOn('executable')
