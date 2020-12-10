@@ -71,6 +71,14 @@ query> SHOW TABLES;
 query> SHOW COLUMNS FROM table_name;
 ```
 
+# Supported Tables
+
+* `replicas` - all replicas, topics, partitions, assigned broker, ISR status, and etc.
+* `brokers` - all brokers in the cluster, including hostname, listening port, rack, and controllership.
+* `logdirs` - "logdirs" that every broker has 1 or more and store topic data, including per-topic, per-partition, filesystem path, size, and etc.
+* `configs` - static/dynamic configurations that applies for brokers and topics with its name, value and configuraiton source. (e.g, `min.insync.replicas`, `retention.ms`)
+* `consumers` - all consumer groups, including their coordinator broker, group state, host and topic/partitions assignment.
+
 # Query Examples
 
 ```sh
