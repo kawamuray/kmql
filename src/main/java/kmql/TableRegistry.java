@@ -11,6 +11,7 @@ import kmql.table.BrokersTable;
 import kmql.table.ConfigsTable;
 import kmql.table.ConsumersTable;
 import kmql.table.LogdirsTable;
+import kmql.table.ReassignmentsTable;
 import kmql.table.ReplicasTable;
 
 /**
@@ -25,6 +26,7 @@ public class TableRegistry implements Iterable<Map.Entry<String, Table>> {
         registerDefault(new LogdirsTable());
         registerDefault(new ConfigsTable());
         registerDefault(new ConsumersTable());
+        registerDefault(new ReassignmentsTable());
     }
 
     private final ConcurrentMap<String, Table> tables;
