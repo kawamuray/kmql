@@ -7,6 +7,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import kmql.command.ExpireCommand;
+import kmql.command.FormatCommand;
 import kmql.command.HelpCommand;
 
 /**
@@ -18,6 +19,7 @@ public class CommandRegistry implements Iterable<Entry<String, Command>> {
     static {
         registerDefault("help", new HelpCommand());
         registerDefault("expire", new ExpireCommand());
+        registerDefault("format", new FormatCommand());
     }
 
     private final ConcurrentMap<String, Command> commands;
