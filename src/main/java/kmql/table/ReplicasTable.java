@@ -51,7 +51,8 @@ public class ReplicasTable implements Table {
                         stmt.setString(1, topic);
                         stmt.setInt(2, partition.partition());
                         stmt.setInt(3, replica.id());
-                        stmt.setBoolean(4, partition.leader().id() == replica.id());
+                        Node leader = partition.leader();
+                        stmt.setBoolean(4, leader != null && leader.id() == replica.id());
                         stmt.setBoolean(5, replicas.get(0).id() == replica.id());
                         stmt.setBoolean(6, partition.isr().contains(replica));
                         stmt.setInt(7, i);
