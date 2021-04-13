@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.ListTopicsOptions;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.Node;
 import org.apache.kafka.common.TopicPartitionInfo;
@@ -37,7 +38,8 @@ public class ReplicasTable implements Table {
 
     @Override
     public void prepare(Connection connection, AdminClient adminClient) throws Exception {
-        Set<String> topics = adminClient.listTopics().names().get();
+        ListTopicsOptions options = new ListTopicsOptions().listInternal(true);
+        Set<String> topics = adminClient.listTopics(options).names().get();
         Map<String, TopicDescription> topicInfo = adminClient.describeTopics(topics).all().get();
         try (PreparedStatement stmt = connection.prepareStatement(
                 "INSERT INTO replicas (topic, partition, broker_id, is_leader, is_preferred_leader, is_in_sync, replica_order)"
